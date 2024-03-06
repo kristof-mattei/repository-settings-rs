@@ -106,6 +106,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
 
 [[package]]
+name = "logscreen"
+version = "0.0.0-development"
+dependencies = [
+ "color-eyre",
+]
+
+[[package]]
 name = "memchr"
 version = "2.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -146,13 +153,6 @@ name = "pin-project-lite"
 version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8afb450f006bf6385ca15ef45d71d2288452bc3683ce2e2cacc0d18e4be60b58"
-
-[[package]]
-name = "rust-end-to-end-application"
-version = "0.0.0-development"
-dependencies = [
- "color-eyre",
-]
 
 [[package]]
 name = "rustc-demangle"
