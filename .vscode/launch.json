@@ -9,11 +9,7 @@
             "request": "launch",
             "name": "Debug executable 'logscreen'",
             "cargo": {
-                "args": [
-                    "build",
-                    "--bin=logscreen",
-                    "--package=logscreen"
-                ],
+                "args": ["build", "--bin=logscreen", "--package=logscreen"],
                 "filter": {
                     "name": "logscreen",
                     "kind": "bin"
@@ -23,7 +19,7 @@
             "cwd": "${workspaceFolder}",
             "env": {
                 "RUST_BACKTRACE": "1",
-                "RUST_LOG": "DEBUG,logscreen=TRACE"
+                "RUST_LOG": "DEBUG,socketioxide=INFO,engineioxide=INFO,logscreen=TRACE"
             },
             "internalConsoleOptions": "openOnSessionStart",
             "terminal": "console"
@@ -48,7 +44,7 @@
             "cwd": "${workspaceFolder}",
             "env": {
                 "RUST_BACKTRACE": "1",
-                "RUST_LOG": "DEBUG,logscreen=TRACE"
+                "RUST_LOG": "DEBUG,socketioxide=INFO,engineioxide=INFO,logscreen=TRACE"
             },
             "internalConsoleOptions": "openOnSessionStart",
             "terminal": "console"
@@ -73,7 +69,7 @@
             "cwd": "${workspaceFolder}",
             "env": {
                 "RUST_BACKTRACE": "1",
-                "RUST_LOG": "DEBUG,logscreen=TRACE"
+                "RUST_LOG": "DEBUG,socketioxide=INFO,engineioxide=INFO,logscreen=TRACE"
             },
             "internalConsoleOptions": "openOnSessionStart",
             "terminal": "console"

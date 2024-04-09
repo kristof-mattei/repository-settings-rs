@@ -1,14 +1,14 @@
 {
-    "debug.internalConsoleOptions": "openOnSessionStart",
-    "prettier.configPath": "./.prettierrc.cjs",
+    "jest.enable": false,
+    "rust-analyzer.runnables.extraEnv": {
+        "RUST_LOG": "DEBUG,socketioxide=INFO,engineioxide=INFO,logscreen=TRACE"
+    },
+    "rust-analyzer.debug.openDebugPane": true,
     "rust-analyzer.debug.engineSettings": {
         "lldb": {
             "internalConsoleOptions": "openOnSessionStart",
             "terminal": "console"
         }
     },
-    "rust-analyzer.debug.openDebugPane": true,
-    "rust-analyzer.runnables.extraEnv": {
-        "RUST_LOG": "DEBUG,logscreen=TRACE"
-    }
+    "debug.internalConsoleOptions": "openOnSessionStart"
 }
