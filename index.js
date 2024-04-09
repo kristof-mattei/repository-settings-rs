@@ -1,8 +1,8 @@
 async function printForever() {
     while (true) {
-        console.log((new Date()).toISOString());
+        console.log(new Date().toISOString());
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 }
 
