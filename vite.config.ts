@@ -1,5 +1,6 @@
 import path from "path";
 
+import { codecovVitePlugin } from "@codecov/vite-plugin";
 import react from "@vitejs/plugin-react";
 
 import { type UserConfig, loadEnv } from "vite";
@@ -18,6 +19,11 @@ export default defineConfig(({ mode }) => {
             svgr(),
             viteTsConfigPaths(),
             checker({ typescript: true }),
+            codecovVitePlugin({
+                enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+                bundleName: "logscreen-front-end",
+                uploadToken: process.env.CODECOV_TOKEN,
+            }),
         ],
         optimizeDeps: {
             exclude: ["src/entrypoints/index.ts"],
