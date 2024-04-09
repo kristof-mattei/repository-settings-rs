@@ -24,7 +24,7 @@ const esLintConfig = {
     extends: [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
-        "mtandard-with-typescript",
+        "love",
         "plugin:react/jsx-runtime",
         "plugin:import/typescript",
         "plugin:react-hook-form/recommended",
