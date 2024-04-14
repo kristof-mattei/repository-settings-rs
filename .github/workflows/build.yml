@@ -99,6 +99,7 @@ jobs:
       github.event_name == 'pull_request' &&
       fromJSON(needs.repo-has-container.outputs.has_container) == true &&
       (
+        fromJSON(needs.changes.outputs.docker) == true ||
         fromJSON(needs.changes.outputs.rust) == true ||
         fromJSON(needs.changes.outputs.typescript) == true
       )
