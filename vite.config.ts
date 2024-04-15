@@ -1,8 +1,6 @@
 import path from "path";
 
 import { codecovVitePlugin } from "@codecov/vite-plugin";
-import react from "@vitejs/plugin-react";
-
 import { type UserConfig, loadEnv } from "vite";
 import checker from "vite-plugin-checker";
 import svgr from "vite-plugin-svgr";
@@ -15,13 +13,12 @@ export default defineConfig(({ mode }) => {
 
     const config: UserConfig = {
         plugins: [
-            react(),
             svgr(),
             viteTsConfigPaths(),
             checker({ typescript: true }),
             codecovVitePlugin({
                 enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
-                bundleName: "logscreen-front-end",
+                bundleName: "magwords-front-end",
                 uploadToken: process.env.CODECOV_TOKEN,
             }),
         ],
@@ -68,6 +65,7 @@ export default defineConfig(({ mode }) => {
             outputFile: {},
             setupFiles: ["./test.setup.ts"],
             coverage: {
+                reporter: ["lcov", "text", "json", "html"],
                 provider: "v8",
                 reportsDirectory: "../../coverage/vitest",
             },
