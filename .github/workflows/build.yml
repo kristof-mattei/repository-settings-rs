@@ -36,19 +36,11 @@ concurrency:
 jobs:
   build-rust:
     name: Build Rust code
-    needs:
-      - changes
-    if: |
-      fromJSON(needs.changes.outputs.rust) == true
     uses: ./.github/workflows/build-rust.yml
     secrets: inherit
 
   build-typescript:
     name: Build TypeScript code
-    needs:
-      - changes
-    if: |
-      fromJSON(needs.changes.outputs.typescript) == true
     uses: ./.github/workflows/build-typescript.yml
     secrets: inherit
 
@@ -285,7 +277,7 @@ jobs:
           outputs: type=docker,dest=/tmp/${{ env.PLATFORM_UNIQUE_TAG }}.tar
 
       - name: Upload artifact
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
         with:
           name: containers-${{ env.PLATFORM_PAIR }}
           path: /tmp/${{ env.PLATFORM_UNIQUE_TAG }}.tar
