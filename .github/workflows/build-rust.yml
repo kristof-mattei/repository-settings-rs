@@ -228,9 +228,9 @@ jobs:
         with:
           disable_search: true
           fail_ci_if_error: true
-          file: reports/lcov.info
-          plugins: ""
           flags: back-end
+          files: reports/lcov.info
+          plugins: ""
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Fail if tests failed
