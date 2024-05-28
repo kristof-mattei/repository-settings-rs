@@ -161,7 +161,7 @@ jobs:
         with:
           disable_search: true
           fail_ci_if_error: true
-          files: coverage/vitest/lcov.info
+          files: coverage/vitest/coverage-final.json
           flags: front-end
           plugins: ""
           token: ${{ secrets.CODECOV_TOKEN }}
