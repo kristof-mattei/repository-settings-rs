@@ -9,7 +9,11 @@
             "request": "launch",
             "name": "Debug executable 'logscreen'",
             "cargo": {
-                "args": ["build", "--bin=logscreen", "--package=logscreen"],
+                "args": [
+                    "build",
+                    "--bin=logscreen",
+                    "--package=logscreen"
+                ],
                 "filter": {
                     "name": "logscreen",
                     "kind": "bin"
