@@ -7,11 +7,11 @@ mod states;
 mod tasks;
 mod utils;
 
+use std::collections::VecDeque;
 use std::env;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Duration;
-use std::{collections::VecDeque, time::SystemTime};
+use std::time::{Duration, SystemTime};
 
 use serde_json::json;
 use socketioxide::SocketIo;
