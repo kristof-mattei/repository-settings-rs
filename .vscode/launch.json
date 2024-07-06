@@ -9,7 +9,11 @@
             "request": "launch",
             "name": "Debug executable 'repository-settings-rs'",
             "cargo": {
-                "args": ["build", "--bin=repository-settings-rs", "--package=repository-settings-rs"],
+                "args": [
+                    "build",
+                    "--bin=repository-settings-rs",
+                    "--package=repository-settings-rs"
+                ],
                 "filter": {
                     "name": "repository-settings-rs",
                     "kind": "bin"
