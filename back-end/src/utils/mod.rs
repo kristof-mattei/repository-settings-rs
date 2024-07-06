@@ -1,4 +1,3 @@
-use tokio::signal::unix::{signal, SignalKind};
 use tokio::task::JoinHandle;
 
 pub mod env;
@@ -25,10 +24,4 @@ where
         Ok(Err(err)) => Err(err.into()),
         Err(err) => Err(err.into()),
     }
-}
-
-/// Waits forever for a sigterm
-pub(crate) async fn wait_for_sigterm() -> Result<(), std::io::Error> {
-    signal(SignalKind::terminate())?.recv().await;
-    Ok(())
 }

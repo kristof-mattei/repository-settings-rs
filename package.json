@@ -1,5 +1,5 @@
 {
-  "name": "logscreen",
+  "name": "repository-settings-rs",
   "version": "0.0.0-development",
   "description": "It's written in Rust!",
   "type": "module",
@@ -23,12 +23,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kristof-mattei/logscreen"
+    "url": "https://github.com/kristof-mattei/repository-settings-rs"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/kristof-mattei/logscreen/issues"
+    "url": "https://github.com/kristof-mattei/repository-settings-rs/issues"
   },
   "dependencies": {
     "react": "18.3.1",
@@ -44,7 +44,7 @@
       "prettier --ignore-unknown --write --"
     ]
   },
-  "homepage": "https://github.com/kristof-mattei/logscreen#readme",
+  "homepage": "https://github.com/kristof-mattei/repository-settings-rs#readme",
   "devDependencies": {
     "@actions/tool-cache": "2.0.1",
     "@codecov/vite-plugin": "0.0.1-beta.10",

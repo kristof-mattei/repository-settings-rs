@@ -1,168 +1,35 @@
-mod logs;
+mod cli;
 mod router;
 mod routes;
 mod server;
+mod signal_handlers;
 mod state;
-mod states;
-mod tasks;
+mod statistics;
 mod utils;
 
-use std::collections::VecDeque;
 use std::env;
-use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::{Duration, SystemTime};
+use std::time::Duration;
 
-use serde_json::json;
+use cli::parse_cli;
+use dotenvy::dotenv;
+use router::build_router;
+use server::server_forever;
 use socketioxide::SocketIo;
-use states::config::Config;
-use tokio::signal;
-use tokio::sync::Mutex;
-use tokio::task::JoinSet;
+use state::ApplicationState;
+use statistics::Statistics;
+use tokio::sync::RwLock;
 use tokio::time::timeout;
 use tokio_util::sync::CancellationToken;
 use tracing::{event, Level};
-use tracing_subscriber::filter::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-
-use crate::logs::setup_socket;
-use crate::router::build_router;
-use crate::server::setup_server;
-use crate::state::ApplicationState;
-use crate::tasks::monitor_stdin;
-
-#[allow(clippy::unnecessary_wraps)]
-fn build_configs() -> Result<Config, color_eyre::eyre::Report> {
-    let config = Config {};
-
-    Ok(config)
-}
-
-/// starts all the tasks, such as the web server, the key refresh, ...
-/// ensures all tasks are gracefully shutdown in case of error, ctrl+c or sigterm
-async fn start_tasks() -> Result<(), color_eyre::Report> {
-    let config = build_configs()?;
-
-    // this channel is used to communicate between
-    // tasks and this function, in the case that a task fails, they'll send a message on the shutdown channel
-    // after which we'll gracefully terminate other services
-    let token = CancellationToken::new();
-
-    let application_state = ApplicationState::new(config);
-
-    let (layer, io) = SocketIo::new_layer();
-
-    let router = build_router(application_state, layer);
-
-    let bind_to = SocketAddr::from(([0, 0, 0, 0], 3000));
-
-    let messages = Arc::new(Mutex::<VecDeque<String>>::new(VecDeque::new()));
-
-    let (sender, mut receiver) = tokio::sync::mpsc::channel::<String>(32);
-
-    let word_socket = { setup_socket(io, messages).await };
-
-    let mut tasks = JoinSet::new();
-
-    {
-        let token = token.clone();
-
-        tasks.spawn(async move {
-            let _guard = token.clone().drop_guard();
-
-            loop {
-                let message = receiver.recv().await;
-
-                let timestamp = SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .expect("Computer time wrong")
-                    .as_millis();
-
-                let json = json!({
-                    "timestamp": timestamp,
-                    "message": message
-                });
-
-                if let Err(err) = word_socket.get_socket().emit("input", json) {
-                    event!(Level::ERROR, ?err, "Failed to send line");
-                }
-            }
-        });
-    }
-
-    {
-        let token = token.clone();
-
-        tasks.spawn(async move {
-            let _guard = token.clone().drop_guard();
-
-            match monitor_stdin(sender, token).await {
-                Err(err) => {
-                    event!(Level::ERROR, ?err, "Stdin died");
-                },
-                Ok(()) => {
-                    event!(Level::INFO, "Stdin shut down");
-                },
-            }
-        });
-    }
-
-    {
-        let token = token.clone();
-
-        tasks.spawn(async move {
-            let _guard = token.clone().drop_guard();
-
-            match setup_server(bind_to, router, token).await {
-                Err(err) => {
-                    event!(Level::ERROR, ?err, "Server died");
-                },
-                Ok(()) => {
-                    event!(Level::INFO, "Server shut down");
-                },
-            }
-        });
-    }
-
-    // now we wait forever for either
-    // * sigterm
-    // * ctrl + c
-    // * a message on the shutdown channel, sent either by the server task or
-    // another task when they complete (which means they failed)
-    tokio::select! {
-        _ = utils::wait_for_sigterm() => {
-            event!(Level::WARN, "Sigterm detected, stopping all tasks");
-        },
-        _ = signal::ctrl_c() => {
-            event!(Level::WARN, "CTRL+C detected, stopping all tasks");
-        },
-        () = token.cancelled() => {
-            event!(Level::ERROR, "Underlying task stopped, stopping all others tasks");
-        },
-    };
-
-    // announce cancel
-    token.cancel();
-
-    // wait for the task that holds the server to exit gracefully
-    // it listens to shutdown_send
-    if timeout(Duration::from_millis(10000), tasks.shutdown())
-        .await
-        .is_err()
-    {
-        event!(
-            Level::ERROR,
-            message = "Tasks didn't stop within allotted time!"
-        );
-    }
-
-    event!(Level::INFO, "Goodbye");
-
-    Ok(())
-}
+use tracing_subscriber::EnvFilter;
 
 fn main() -> Result<(), color_eyre::Report> {
+    // set up .env, if it fails, user didn't provide any
+    let _r = dotenv();
+
     color_eyre::config::HookBuilder::default()
         .capture_span_trace_by_default(false)
         .install()?;
@@ -171,6 +38,7 @@ fn main() -> Result<(), color_eyre::Report> {
         .unwrap_or_else(|_| format!("INFO,{}=TRACE", env!("CARGO_PKG_NAME").replace('-', "_")));
 
     // set up logger
+    // from_env defaults to RUST_LOG
     tracing_subscriber::registry()
         .with(EnvFilter::builder().parse(rust_log_value).unwrap())
         .with(tracing_subscriber::fmt::layer())
@@ -184,4 +52,94 @@ fn main() -> Result<(), color_eyre::Report> {
     let result: Result<(), color_eyre::Report> = rt.block_on(start_tasks());
 
     result
+}
+
+async fn start_tasks() -> Result<(), color_eyre::Report> {
+    let statistics = Arc::new(RwLock::new(Statistics::new()));
+
+    let config = parse_cli().map_err(|error| {
+        // this prints the error in color and exits
+        // can't do anything else until
+        // https://github.com/clap-rs/clap/issues/2914
+        // is merged in
+        if let Some(clap_error) = error.downcast_ref::<clap::error::Error>() {
+            clap_error.exit();
+        }
+
+        error
+    })?;
+
+    config.log();
+
+    let application_state = ApplicationState::new(config);
+
+    let (layer, _io) = SocketIo::new_layer();
+
+    let bind_to = ([0, 0, 0, 0], 3000).into();
+
+    // TODO
+    let router = build_router(application_state, layer);
+
+    // this channel is used to communicate between
+    // tasks and this function, in the case that a task fails, they'll send a message on the shutdown channel
+    // after which we'll gracefully terminate other services
+    let token = CancellationToken::new();
+
+    let mut tasks = tokio::task::JoinSet::new();
+
+    {
+        let token = token.clone();
+
+        tasks.spawn(server_forever(bind_to, router, token.clone()));
+    }
+
+    {
+        let statistics = statistics.clone();
+
+        tasks.spawn(async move {
+            while let Some(()) = signal_handlers::wait_for_sigusr1().await {
+                statistics.read().await.log_totals();
+            }
+        });
+    }
+
+    // now we wait forever for either
+    // * SIGTERM
+    // * ctrl + c (SIGINT)
+    // * a message on the shutdown channel, sent either by the server task or
+    // another task when they complete (which means they failed)
+    tokio::select! {
+        _ = signal_handlers::wait_for_sigint() => {
+            // we completed because ...
+            event!(Level::WARN, message = "CTRL+C detected, stopping all tasks");
+        },
+        _ = tasks.join_next() => {},
+        _ = signal_handlers::wait_for_sigterm() => {
+            // we completed because ...
+            event!(Level::WARN, message = "Sigterm detected, stopping all tasks");
+        },
+        () = token.cancelled() => {
+            event!(Level::WARN, "Underlying task stopped, stopping all others tasks");
+        },
+    };
+
+    // backup, in case we forgot a dropguard somewhere
+    token.cancel();
+
+    // wait for the task that holds the server to exit gracefully
+    // it listens to shutdown_send
+    if timeout(Duration::from_millis(10000), tasks.shutdown())
+        .await
+        .is_err()
+    {
+        event!(Level::ERROR, "Tasks didn't stop within allotted time!");
+    }
+
+    {
+        (statistics.read().await).log_totals();
+    }
+
+    event!(Level::INFO, "Goodbye");
+
+    Ok(())
 }

@@ -1,10 +1,11 @@
+pub mod config;
 use std::sync::Arc;
 
 use axum::async_trait;
 use axum::extract::{FromRef, FromRequestParts};
 use axum::http::request::Parts;
 
-use crate::states::config::Config;
+use crate::state::config::Config;
 
 impl FromRef<ApplicationState> for Arc<Config> {
     fn from_ref(input: &ApplicationState) -> Self {
