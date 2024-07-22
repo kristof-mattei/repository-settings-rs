@@ -1,6 +1,5 @@
-#![deny(clippy::unused_async)]
-
-use axum::http::StatusCode;
+use axum::handler::HandlerWithoutStateExt;
+use axum::http::{HeaderMap, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::Router;
@@ -9,16 +8,17 @@ mod html_router;
 use socketioxide::layer::SocketIoLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer};
-use tracing::Level;
+use tracing::{event, Level};
 
 use self::api_router::build_api_router;
 use self::html_router::build_html_router;
 use crate::state::ApplicationState;
 
-// #[allow(clippy::unused_async)]
-// async fn handler_404() -> impl IntoResponse {
-//     (StatusCode::NOT_FOUND, "nothing to see here")
-// }
+#[allow(clippy::unused_async)]
+async fn handler_404(headers: HeaderMap) -> impl IntoResponse {
+    event!(Level::DEBUG, ?headers);
+    (StatusCode::NOT_FOUND, "nothing to see here")
+}
 
 async fn healthz() -> impl IntoResponse {
     (StatusCode::OK, "Hello, world!")
@@ -35,13 +35,18 @@ async fn healthz() -> impl IntoResponse {
 pub(crate) fn build_router(state: ApplicationState, websocket_layer: SocketIoLayer) -> Router {
     let api_router = build_api_router(state);
 
-    let html_router = build_html_router();
+    // for now
+    let enable_html = false;
 
-    // .fallback_service(handler_404.into_service())
-    api_router
-        .merge(html_router)
-        .layer(websocket_layer)
+    let router = if enable_html {
+        api_router.merge(build_html_router()).layer(websocket_layer)
+    } else {
+        api_router
+    };
+
+    router
         .route("/healthz", get(healthz))
+        .fallback_service(handler_404.into_service())
         .layer(CorsLayer::permissive())
         .layer(
             TraceLayer::new_for_http()

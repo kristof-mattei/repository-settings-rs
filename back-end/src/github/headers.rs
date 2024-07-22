@@ -1,0 +1,35 @@
+pub(crate) const GITHUB_EVENT_HEADER: &str = "x-github-event";
+
+// HEADERS
+// {
+//   "host": "127.0.0.1:3000",
+//   "connection": "keep-alive",
+//   "accept": "*/*",
+//   "user-agent": "GitHub-Hookshot/f22e2d9",
+//   "max-forwards": "10",
+//   "x-github-delivery": "92ee2456-3c9a-11ef-8bcd-ee04e588c4a1",
+//   "x-github-event": "push",
+//   "x-github-hook-id": "488775601",
+//   "x-github-hook-installation-target-id": "939283",
+//   "x-github-hook-installation-target-type": "integration",
+//   "x-arr-log-id": "90a5199f-5f1c-4272-82c3-2827120212bb",
+//   "client-ip": "140.82.115.144:25462",
+//   "x-client-ip": "140.82.115.144",
+//   "disguised-host": "smee.io",
+//   "x-site-deployment-id": "smee-io-production",
+//   "was-default-hostname": "smee-io-production.azurewebsites.net",
+//   "x-forwarded-proto": "https",
+//   "x-appservice-proto": "https",
+//   "x-arr-ssl": "2048|256|CN=GeoTrust Global TLS RSA4096 SHA256 2022 CA1, O=\"DigiCert, Inc.\", C=US|CN=smee.io",
+//   "x-forwarded-tlsversion": "1.3",
+//   "x-forwarded-for": "140.82.115.144:25462",
+//   "x-original-url": "/OyGvJpzqiDnduEdI",
+//   "x-waws-unencoded-url": "/OyGvJpzqiDnduEdI",
+//   "x-client-port": "25462",
+//   "content-type": "application/json",
+//   "timestamp": "1720382006553",
+//   "accept-language": "*",
+//   "sec-fetch-mode": "cors",
+//   "accept-encoding": "gzip, deflate",
+//   "content-length": "8626"
+// }

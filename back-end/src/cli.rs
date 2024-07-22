@@ -87,9 +87,8 @@ mod tests {
 
     use color_eyre::eyre;
 
-    use crate::state::config::Config;
-
     use super::parse_cli_from;
+    use crate::state::config::Config;
 
     fn parse_factory(input: &'static str) -> Result<Config, eyre::Report> {
         // fake input

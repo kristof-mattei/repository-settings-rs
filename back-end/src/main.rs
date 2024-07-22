@@ -1,7 +1,9 @@
 mod cli;
+mod github;
 mod router;
 mod routes;
 mod server;
+mod settings;
 mod signal_handlers;
 mod state;
 mod statistics;

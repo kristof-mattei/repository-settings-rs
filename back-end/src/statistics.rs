@@ -16,6 +16,5 @@ impl Statistics {
     #[allow(clippy::unused_self)]
     pub(crate) fn log_totals(&self) {
         event!(Level::INFO, "Statistics");
-
     }
 }
